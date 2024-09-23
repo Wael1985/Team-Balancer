@@ -206,20 +206,26 @@
 
     <script>
         let players = [
-            { id: 1, name: 'Osama', rating: 2 },
-            { id: 2, name: 'Chilly', rating: 2 },
-            { id: 3, name: 'Ahmed', rating: 2 },
-            { id: 4, name: 'Zak', rating: 2 },
-            { id: 5, name: 'Suffian', rating: 2 },
-            { id: 6, name: 'Wael', rating: 2 },
-            { id: 7, name: 'Zayed', rating: 2 },
-            { id: 8, name: 'Martin', rating: 2 },
-            { id: 9, name: 'Felix', rating: 2 },
-            { id: 10, name: 'Rob', rating: 2 },
-            { id: 11, name: 'Hamza F', rating: 2 },
-            { id: 12, name: 'Lautaro', rating: 2 },
-            { id: 13, name: 'Raul', rating: 2 },
-            { id: 14, name: 'Johanne', rating: 2 },
+            { id: 1, name: 'Zyad', rating: 2 },
+            { id: 2, name: 'Ahmed', rating: 2 },
+            { id: 3, name: 'Hamza', rating: 2 },
+            { id: 4, name: 'Maz', rating: 2 },
+            { id: 5, name: 'Osama', rating: 2 },
+            { id: 6, name: 'Mo', rating: 2 },
+            { id: 7, name: 'Nas', rating: 2 },
+            { id: 8, name: 'Chilly', rating: 2 },
+            { id: 9, name: 'Ahmed', rating: 2 },
+            { id: 10, name: 'Zak', rating: 2 },
+            { id: 11, name: 'Suffian', rating: 2 },
+            { id: 12, name: 'Wael', rating: 2 },
+            { id: 13, name: 'Zayed', rating: 2 },
+            { id: 14, name: 'Martin', rating: 2 },
+            { id: 15, name: 'Felix', rating: 2 },
+            { id: 16, name: 'Rob', rating: 2 },
+            { id: 17, name: 'Hamza F', rating: 2 },
+            { id: 18, name: 'Lautaro', rating: 2 },
+            { id: 19, name: 'Raul', rating: 2 },
+            { id: 12, name: 'Johanne', rating: 2 },
         ];
         let selectedPlayers = [];
         let teams = { team1: [], team2: [] };
@@ -375,11 +381,11 @@
             printout.innerHTML = '<h2>Football Teams</h2>';
             
             const team1Text = document.createElement('div');
-            team1Text.innerHTML = '<h3>Team 1</h3>' + teams.team1.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
+            team1Text.innerHTML = '<h3>White</h3>' + teams.team1.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
             printout.appendChild(team1Text);
 
             const team2Text = document.createElement('div');
-            team2Text.innerHTML = '<h3>Team 2</h3>' + teams.team2.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
+            team2Text.innerHTML = '<h3>Coloured</h3>' + teams.team2.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
             printout.appendChild(team2Text);
 
             document.getElementById('pitchLayout').style.display = 'none';
