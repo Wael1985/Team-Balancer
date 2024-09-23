@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Cambridge Footy Team Balancer (Beta) </title>
+    <title>Football Team Balancer</title>
     <style>
         :root {
             --primary-color: #007AFF;
@@ -99,6 +99,13 @@
             gap: 10px;
             margin-top: 20px;
         }
+        .select-all-button {
+            background-color: #34C759;
+            margin-top: 10px;
+        }
+        .select-all-button:hover {
+            background-color: #2EA84A;
+        }
         @media print {
             body * {
                 visibility: hidden;
@@ -147,7 +154,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>⚽️ Camridge Footy Team Balancer</h1>
+        <h1>⚽️ Football Team Balancer</h1>
         
         <div>
             <h2>Add New Player</h2>
@@ -165,6 +172,7 @@
         <select id="allPlayersList" onchange="selectPlayer(this.value)">
             <option value="">Select a player</option>
         </select>
+        <button class="select-all-button" onclick="selectAllPlayers()">Select All Players</button>
         
         <h2>Selected Players</h2>
         <ul id="selectedPlayersList"></ul>
@@ -178,11 +186,11 @@
         
         <div class="teams">
             <div class="team">
-                <h2>White</h2>
+                <h2>Team 1</h2>
                 <ul id="team1List"></ul>
             </div>
             <div class="team">
-                <h2>Coloured</h2>
+                <h2>Team 2</h2>
                 <ul id="team2List"></ul>
             </div>
         </div>
@@ -269,6 +277,15 @@
                 renderSelectedPlayers();
             }
             document.getElementById('allPlayersList').value = '';
+        }
+
+        function selectAllPlayers() {
+            players.forEach(player => {
+                if (!selectedPlayers.some(p => p.id === player.id)) {
+                    selectedPlayers.push(player);
+                }
+            });
+            renderSelectedPlayers();
         }
 
         function removeSelectedPlayer(playerId) {
