@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Cambridge Footy Team Balancer (Beta) </title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --background-color: #F2F2F7;
+            --card-background: #FFFFFF;
+            --text-color: #1C1C1E;
+            --secondary-text-color: #8E8E93;
+            --border-radius: 15px;
+        }
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 100%;
+            margin: auto;
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: var(--text-color);
+            font-size: 20px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+        input, select {
+            background-color: var(--background-color);
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: var(--background-color);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+        }
+        li select, li button {
+            margin-top: 10px;
+        }
+        .teams {
+            display: flex;
+            flex-direction: column;
+        }
+        .team {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: var(--background-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+        #pitchLayout, #teamsPrintout {
+            display: none;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #pitchLayout, #pitchLayout *, #teamsPrintout, #teamsPrintout * {
+                visibility: visible;
+            }
+            #pitchLayout, #teamsPrintout {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+        @media (min-width: 768px) {
+            .container {
+                max-width: 750px;
+            }
+            h1 {
+                font-size: 32px;
+            }
+            h2 {
+                font-size: 24px;
+            }
+            .teams {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .team {
+                width: 48%;
+            }
+            li {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            li select, li button {
+                width: auto;
+                margin-top: 0;
+            }
+            .action-buttons {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽️ Camridge Footy Team Balancer</h1>
+        
+        <div>
+            <h2>Add New Player</h2>
+            <input type="text" id="newPlayerName" placeholder="Player Name">
+            <select id="newPlayerRating">
+                <option value="0">Not decided</option>
+                <option value="1">⭐</option>
+                <option value="2" selected>⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+            </select>
+            <button onclick="addPlayer()">Add Player</button>
+        </div>
+        
+        <h2>All Players</h2>
+        <select id="allPlayersList" onchange="selectPlayer(this.value)">
+            <option value="">Select a player</option>
+        </select>
+        
+        <h2>Selected Players</h2>
+        <ul id="selectedPlayersList"></ul>
+        
+        <div class="action-buttons">
+            <button onclick="balanceTeams()">Balance Teams</button>
+            <button onclick="resetRatings()">Reset Ratings</button>
+            <button onclick="printPitchLayout()">Print Pitch</button>
+            <button onclick="printTeamsText()">Print Teams</button>
+        </div>
+        
+        <div class="teams">
+            <div class="team">
+                <h2>Team 1</h2>
+                <ul id="team1List"></ul>
+            </div>
+            <div class="team">
+                <h2>Team 2</h2>
+                <ul id="team2List"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="pitchLayout">
+        <h2>Pitch Layout</h2>
+        <div class="pitch-team" id="pitchTeam1"></div>
+        <div class="pitch-team" id="pitchTeam2"></div>
+    </div>
+
+    <div id="teamsPrintout"></div>
+
+    <script>
+        let players = [
+            { id: 1, name: 'Osama', rating: 2 },
+            { id: 2, name: 'Chilly', rating: 2 },
+            { id: 3, name: 'Ahmed', rating: 2 },
+            { id: 4, name: 'Zak', rating: 2 },
+            { id: 5, name: 'Suffian', rating: 2 },
+            { id: 6, name: 'Wael', rating: 2 },
+            { id: 7, name: 'Zayed', rating: 2 },
+            { id: 8, name: 'Martin', rating: 2 },
+            { id: 9, name: 'Felix', rating: 2 },
+            { id: 10, name: 'Rob', rating: 2 },
+            { id: 11, name: 'Hamza F', rating: 2 },
+            { id: 12, name: 'Lautaro', rating: 2 },
+            { id: 13, name: 'Raul', rating: 2 },
+            { id: 14, name: 'Johanne', rating: 2 },
+        ];
+        let selectedPlayers = [];
+        let teams = { team1: [], team2: [] };
+
+        function renderPlayers() {
+            const allPlayersList = document.getElementById('allPlayersList');
+            allPlayersList.innerHTML = '<option value="">Select a player</option>';
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = `${player.name} ${player.rating > 0 ? '⭐'.repeat(player.rating) : '(Not decided)'}`;
+                allPlayersList.appendChild(option);
+            });
+        }
+
+        function renderSelectedPlayers() {
+            const selectedPlayersList = document.getElementById('selectedPlayersList');
+            selectedPlayersList.innerHTML = '';
+            selectedPlayers.forEach(player => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${player.name}</span>
+                    <select onchange="updatePlayerRating(${player.id}, this.value)">
+                        <option value="0" ${player.rating === 0 ? 'selected' : ''}>Not decided</option>
+                        <option value="1" ${player.rating === 1 ? 'selected' : ''}>⭐</option>
+                        <option value="2" ${player.rating === 2 ? 'selected' : ''}>⭐⭐</option>
+                        <option value="3" ${player.rating === 3 ? 'selected' : ''}>⭐⭐⭐</option>
+                    </select>
+                    <button onclick="removeSelectedPlayer(${player.id})">Remove</button>
+                `;
+                selectedPlayersList.appendChild(li);
+            });
+        }
+
+        function addPlayer() {
+            const nameInput = document.getElementById('newPlayerName');
+            const ratingSelect = document.getElementById('newPlayerRating');
+            const name = nameInput.value.trim();
+            const rating = parseInt(ratingSelect.value);
+            if (name) {
+                const newPlayer = { id: players.length + 1, name, rating };
+                players.push(newPlayer);
+                selectedPlayers.push(newPlayer);
+                nameInput.value = '';
+                ratingSelect.value = '2';
+                renderPlayers();
+                renderSelectedPlayers();
+            }
+        }
+
+        function selectPlayer(playerId) {
+            const player = players.find(p => p.id === parseInt(playerId));
+            if (player && !selectedPlayers.some(p => p.id === player.id)) {
+                selectedPlayers.push(player);
+                renderSelectedPlayers();
+            }
+            document.getElementById('allPlayersList').value = '';
+        }
+
+        function removeSelectedPlayer(playerId) {
+            selectedPlayers = selectedPlayers.filter(p => p.id !== playerId);
+            renderSelectedPlayers();
+        }
+
+        function updatePlayerRating(id, newRating) {
+            const player = players.find(p => p.id === id);
+            const selectedPlayer = selectedPlayers.find(p => p.id === id);
+            if (player && selectedPlayer) {
+                player.rating = parseInt(newRating);
+                selectedPlayer.rating = parseInt(newRating);
+                renderPlayers();
+                renderSelectedPlayers();
+            }
+        }
+
+        function resetRatings() {
+            players.forEach(player => player.rating = 0);
+            selectedPlayers.forEach(player => player.rating = 0);
+            renderPlayers();
+            renderSelectedPlayers();
+        }
+
+        function balanceTeams() {
+            const sortedPlayers = [...selectedPlayers].sort((a, b) => b.rating - a.rating);
+            teams.team1 = [];
+            teams.team2 = [];
+            let team1Rating = 0;
+            let team2Rating = 0;
+
+            sortedPlayers.forEach(player => {
+                if (team1Rating <= team2Rating) {
+                    teams.team1.push(player);
+                    team1Rating += player.rating;
+                } else {
+                    teams.team2.push(player);
+                    team2Rating += player.rating;
+                }
+            });
+
+            renderTeamList(teams.team1, 'team1List');
+            renderTeamList(teams.team2, 'team2List');
+            renderPitchLayout(teams.team1, teams.team2);
+        }
+
+        function renderTeamList(team, elementId) {
+            const teamList = document.getElementById(elementId);
+            teamList.innerHTML = '';
+            team.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = `${player.name} ${player.rating > 0 ? '⭐'.repeat(player.rating) : '(Not decided)'}`;
+                teamList.appendChild(li);
+            });
+        }
+
+        function renderPitchLayout(team1, team2) {
+            const pitchTeam1 = document.getElementById('pitchTeam1');
+            const pitchTeam2 = document.getElementById('pitchTeam2');
+            pitchTeam1.innerHTML = '<h3>Team 1</h3>';
+            pitchTeam2.innerHTML = '<h3>Team 2</h3>';
+
+            team1.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'pitch-player';
+                div.textContent = player.name;
+                pitchTeam1.appendChild(div);
+            });
+
+            team2.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'pitch-player';
+                div.textContent = player.name;
+                pitchTeam2.appendChild(div);
+            });
+        }
+
+        function printPitchLayout() {
+            document.getElementById('teamsPrintout').style.display = 'none';
+            document.getElementById('pitchLayout').style.display = 'block';
+            window.print();
+        }
+
+        function printTeamsText() {
+            const printout = document.getElementById('teamsPrintout');
+            printout.innerHTML = '<h2>Football Teams</h2>';
+            
+            const team1Text = document.createElement('div');
+            team1Text.innerHTML = '<h3>Team 1</h3>' + teams.team1.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
+            printout.appendChild(team1Text);
+
+            const team2Text = document.createElement('div');
+            team2Text.innerHTML = '<h3>Team 2</h3>' + teams.team2.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
+            printout.appendChild(team2Text);
+
+            document.getElementById('pitchLayout').style.display = 'none';
+            printout.style.display = 'block';
+            window.print();
+        }
+
+        // Initial render
+        renderPlayers();
+        renderSelectedPlayers();
+    </script>
+</body>
+</html>
