@@ -90,9 +90,6 @@
             padding: 15px;
             border-radius: var(--border-radius);
         }
-        #pitchLayout, #teamsPrintout {
-            display: none;
-        }
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -106,19 +103,23 @@
         .select-all-button:hover {
             background-color: #2EA84A;
         }
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #pitchLayout, #pitchLayout *, #teamsPrintout, #teamsPrintout * {
-                visibility: visible;
-            }
-            #pitchLayout, #teamsPrintout {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
+        .share-button {
+            background-color: #5856D6;
+        }
+        .share-button:hover {
+            background-color: #4A49B7;
+        }
+        .save-button {
+            background-color: #FF9500;
+        }
+        .save-button:hover {
+            background-color: #E68400;
+        }
+        .copyright {
+            text-align: center;
+            color: var(--secondary-text-color);
+            font-size: 12px;
+            margin-top: 20px;
         }
         @media (min-width: 768px) {
             .container {
@@ -154,7 +155,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>⚽️ Coleridge Game Balancer (Beta)</h1>
+        <h1>⚽️ Coleridge Team Balancer</h1>
         
         <div>
             <h2>Add New Player</h2>
@@ -180,8 +181,8 @@
         <div class="action-buttons">
             <button onclick="balanceTeams()">Balance Teams</button>
             <button onclick="resetRatings()">Reset Ratings</button>
-            <button onclick="printPitchLayout()">Print Pitch</button>
-            <button onclick="printTeamsText()">Print Teams</button>
+            <button class="share-button" onclick="shareTeams()">Share Teams</button>
+            <button class="save-button" onclick="saveState()">Save</button>
         </div>
         
         <div class="teams">
@@ -194,15 +195,11 @@
                 <ul id="team2List"></ul>
             </div>
         </div>
-    </div>
 
-    <div id="pitchLayout">
-        <h2>Pitch Layout</h2>
-        <div class="pitch-team" id="pitchTeam1"></div>
-        <div class="pitch-team" id="pitchTeam2"></div>
+        <div class="copyright">
+            Copyright © Wael Gorma 2024
+        </div>
     </div>
-
-    <div id="teamsPrintout"></div>
 
     <script>
         let players = [
@@ -336,7 +333,6 @@
 
             renderTeamList(teams.team1, 'team1List');
             renderTeamList(teams.team2, 'team2List');
-            renderPitchLayout(teams.team1, teams.team2);
         }
 
         function renderTeamList(team, elementId) {
@@ -349,51 +345,64 @@
             });
         }
 
-        function renderPitchLayout(team1, team2) {
-            const pitchTeam1 = document.getElementById('pitchTeam1');
-            const pitchTeam2 = document.getElementById('pitchTeam2');
-            pitchTeam1.innerHTML = '<h3>White</h3>';
-            pitchTeam2.innerHTML = '<h3>Coloured</h3>';
+        function shareTeams() {
+            if (teams.team1.length === 0 || teams.team2.length === 0) {
+                alert('Please balance teams first before sharing.');
+                return;
+            }
 
-            team1.forEach(player => {
-                const div = document.createElement('div');
-                div.className = 'pitch-player';
-                div.textContent = player.name;
-                pitchTeam1.appendChild(div);
-            });
+            const team1Names = teams.team1.map(player => player.name).join(', ');
+            const team2Names = teams.team2.map(player => player.name).join(', ');
 
-            team2.forEach(player => {
-                const div = document.createElement('div');
-                div.className = 'pitch-player';
-                div.textContent = player.name;
-                pitchTeam2.appendChild(div);
-            });
+            const shareText = `Team 1: ${team1Names}\n\nTeam 2: ${team2Names}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Football Teams',
+                    text: shareText
+                }).then(() => {
+                    console.log('Teams shared successfully');
+                }).catch((error) => {
+                    console.log('Error sharing teams:', error);
+                    fallbackShare(shareText);
+                });
+            } else {
+                fallbackShare(shareText);
+            }
         }
 
-        function printPitchLayout() {
-            document.getElementById('teamsPrintout').style.display = 'none';
-            document.getElementById('pitchLayout').style.display = 'block';
-            window.print();
+        function fallbackShare(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Teams copied to clipboard! You can now paste them into your preferred messaging app.');
         }
 
-        function printTeamsText() {
-            const printout = document.getElementById('teamsPrintout');
-            printout.innerHTML = '<h2>Football Teams</h2>';
-            
-            const team1Text = document.createElement('div');
-            team1Text.innerHTML = '<h3>White</h3>' + teams.team1.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
-            printout.appendChild(team1Text);
+        function saveState() {
+            const state = {
+                players: players,
+                selectedPlayers: selectedPlayers
+            };
+            localStorage.setItem('footballTeamBalancerState', JSON.stringify(state));
+            alert('Current state saved successfully!');
+        }
 
-            const team2Text = document.createElement('div');
-            team2Text.innerHTML = '<h3>Coloured</h3>' + teams.team2.map(p => `${p.name} (${p.rating > 0 ? '⭐'.repeat(p.rating) : 'Not decided'})`).join('<br>');
-            printout.appendChild(team2Text);
-
-            document.getElementById('pitchLayout').style.display = 'none';
-            printout.style.display = 'block';
-            window.print();
+        function loadState() {
+            const savedState = localStorage.getItem('footballTeamBalancerState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                players = state.players;
+                selectedPlayers = state.selectedPlayers;
+                renderPlayers();
+                renderSelectedPlayers();
+            }
         }
 
         // Initial render
+        loadState();
         renderPlayers();
         renderSelectedPlayers();
     </script>
