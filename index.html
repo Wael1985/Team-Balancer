@@ -465,7 +465,7 @@
             const team1Names = teams.team1.map(player => player.name).join(', ');
             const team2Names = teams.team2.map(player => player.name).join(', ');
 
-            const shareText = `Team 1 ⚪: ${team1Names}\n\nTeam 2 ⚫: ${team2Names}`;
+            const shareText = `White ⚪: ${team1Names}\n\nColoured ⚫: ${team2Names}`;
 
             if (navigator.share) {
                 navigator.share({
