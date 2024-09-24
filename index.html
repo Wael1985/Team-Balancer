@@ -74,21 +74,32 @@
             padding: 15px;
             border-radius: var(--border-radius);
             display: flex;
-            flex-direction: column;
-        }
-        li select, li button {
-            margin-top: 10px;
+            justify-content: space-between;
+            align-items: center;
         }
         .teams {
             display: flex;
             flex-direction: column;
+            gap: 20px;
         }
         .team {
-            width: 100%;
-            margin-bottom: 20px;
-            background-color: var(--background-color);
+            background-color: #f8f9fa;
+            border-radius: 10px;
             padding: 15px;
-            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .team h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .team-icon {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+        .player-icon {
+            font-size: 18px;
+            margin-right: 5px;
         }
         .action-buttons {
             display: grid;
@@ -121,55 +132,93 @@
             font-size: 12px;
             margin-top: 20px;
         }
-        @media (min-width: 768px) {
-            .container {
-                max-width: 750px;
+        .help-toggle, .add-player-toggle {
+            background-color: #34C759;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            cursor: pointer;
+            position: fixed;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .help-toggle {
+            top: 20px;
+            left: 20px;
+            background-color: #007AFF;
+        }
+        .add-player-toggle {
+            top: 20px;
+            right: 20px;
+        }
+        .help-toggle:hover, .add-player-toggle:hover {
+            opacity: 0.9;
+        }
+        .help-content {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 20px;
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 999;
+            max-width: 300px;
+        }
+        .add-player-section {
+            display: none;
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 300px;
+            z-index: 999;
+        }
+        @media (max-width: 768px) {
+            .help-toggle, .add-player-toggle {
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
             }
-            h1 {
-                font-size: 32px;
+            .help-toggle {
+                top: 10px;
+                left: 10px;
             }
-            h2 {
-                font-size: 24px;
+            .add-player-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .help-content, .add-player-section {
+                top: 55px;
+                max-width: calc(100% - 20px);
             }
             .teams {
-                flex-direction: row;
-                justify-content: space-between;
+                flex-direction: column;
             }
             .team {
-                width: 48%;
-            }
-            li {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-            li select, li button {
-                width: auto;
-                margin-top: 0;
+                width: 100%;
             }
             .action-buttons {
-                grid-template-columns: 1fr 1fr 1fr 1fr;
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>⚽️ Coleridge Game Balancer (Beta)</h1>
+        <h1>C⚽️leridge Game Balancer (Beta)</h1>
         
-        <div>
-            <h2>Add New Player</h2>
-            <input type="text" id="newPlayerName" placeholder="Player Name">
-            <select id="newPlayerRating">
-                <option value="0">Not decided</option>
-                <option value="1">⭐</option>
-                <option value="2" selected>⭐⭐</option>
-                <option value="3">⭐⭐⭐</option>
-            </select>
-            <button onclick="addPlayer()">Add Player</button>
-        </div>
-        
-        <h2>All Players</h2>
+        <h2>Select Players</h2>
         <select id="allPlayersList" onchange="selectPlayer(this.value)">
             <option value="">Select a player</option>
         </select>
@@ -187,11 +236,11 @@
         
         <div class="teams">
             <div class="team">
-                <h2>White</h2>
+                <h2><span class="team-icon">⚪</span> White</h2>
                 <ul id="team1List"></ul>
             </div>
             <div class="team">
-                <h2>Coloured</h2>
+                <h2><span class="team-icon">⚫</span> Coloured</h2>
                 <ul id="team2List"></ul>
             </div>
         </div>
@@ -199,6 +248,32 @@
         <div class="copyright">
             Copyright © Wael Gorma 2024
         </div>
+    </div>
+
+    <button class="help-toggle" onclick="toggleHelp()" title="Help">?</button>
+    <div class="help-content" id="helpContent">
+        <h3>How to use:</h3>
+        <ol>
+            <li>Add players using the '+' button in the top right corner</li>
+            <li>Select players from the dropdown or use 'Select All Players'</li>
+            <li>Adjust player ratings if needed</li>
+            <li>Click 'Balance Teams' to create two balanced teams</li>
+            <li>Use 'Share Teams' to share the results</li>
+            <li>Click 'Save' to store your current setup for next time</li>
+        </ol>
+    </div>
+
+    <button class="add-player-toggle" onclick="toggleAddPlayerSection()" title="Add New Player">+</button>
+    <div class="add-player-section" id="addPlayerSection">
+        <h2>Add New Player</h2>
+        <input type="text" id="newPlayerName" placeholder="Player Name">
+        <select id="newPlayerRating">
+            <option value="0">Not decided</option>
+            <option value="1">⭐</option>
+            <option value="2" selected>⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+        </select>
+        <button onclick="addPlayer()">Add Player</button>
     </div>
 
     <script>
@@ -245,13 +320,15 @@
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>${player.name}</span>
-                    <select onchange="updatePlayerRating(${player.id}, this.value)">
-                        <option value="0" ${player.rating === 0 ? 'selected' : ''}>Not decided</option>
-                        <option value="1" ${player.rating === 1 ? 'selected' : ''}>⭐</option>
-                        <option value="2" ${player.rating === 2 ? 'selected' : ''}>⭐⭐</option>
-                        <option value="3" ${player.rating === 3 ? 'selected' : ''}>⭐⭐⭐</option>
-                    </select>
-                    <button onclick="removeSelectedPlayer(${player.id})">Remove</button>
+                    <div>
+                        <select onchange="updatePlayerRating(${player.id}, this.value)">
+                            <option value="0" ${player.rating === 0 ? 'selected' : ''}>Not decided</option>
+                            <option value="1" ${player.rating === 1 ? 'selected' : ''}>⭐</option>
+                            <option value="2" ${player.rating === 2 ? 'selected' : ''}>⭐⭐</option>
+                            <option value="3" ${player.rating === 3 ? 'selected' : ''}>⭐⭐⭐</option>
+                        </select>
+                        <button onclick="removeSelectedPlayer(${player.id})">Remove</button>
+                    </div>
                 `;
                 selectedPlayersList.appendChild(li);
             });
@@ -270,6 +347,7 @@
                 ratingSelect.value = '2';
                 renderPlayers();
                 renderSelectedPlayers();
+                toggleAddPlayerSection();
             }
         }
 
@@ -331,8 +409,36 @@
                 }
             });
 
+            // Try to swap players to improve balance
+            let improved = true;
+            while (improved) {
+                improved = false;
+                for (let i = 0; i < teams.team1.length; i++) {
+                    for (let j = 0; j < teams.team2.length; j++) {
+                        const diff = Math.abs(team1Rating - team2Rating);
+                        const newDiff = Math.abs((team1Rating - teams.team1[i].rating + teams.team2[j].rating) - 
+                                                 (team2Rating - teams.team2[j].rating + teams.team1[i].rating));
+                        if (newDiff < diff) {
+                            // Swap players
+                            const temp = teams.team1[i];
+                            teams.team1[i] = teams.team2[j];
+                            teams.team2[j] = temp;
+                            team1Rating = team1Rating - teams.team2[j].rating + teams.team1[i].rating;
+                            team2Rating = team2Rating - teams.team1[i].rating + teams.team2[j].rating;
+                            improved = true;
+                            break;
+                        }
+                    }
+                    if (improved) break;
+                }
+            }
+
             renderTeamList(teams.team1, 'team1List');
             renderTeamList(teams.team2, 'team2List');
+
+            // Display team ratings
+            console.log('Team 1 Rating:', team1Rating);
+            console.log('Team 2 Rating:', team2Rating);
         }
 
         function renderTeamList(team, elementId) {
@@ -340,7 +446,11 @@
             teamList.innerHTML = '';
             team.forEach(player => {
                 const li = document.createElement('li');
-                li.textContent = `${player.name} ${player.rating > 0 ? '⭐'.repeat(player.rating) : '(Not decided)'}`;
+                const icon = elementId === 'team1List' ? '⚪' : '⚫';
+                li.innerHTML = `
+                    <span class="player-icon">${icon}</span>
+                    ${player.name} ${player.rating > 0 ? '⭐'.repeat(player.rating) : '(Not decided)'}
+                `;
                 teamList.appendChild(li);
             });
         }
@@ -354,7 +464,7 @@
             const team1Names = teams.team1.map(player => player.name).join(', ');
             const team2Names = teams.team2.map(player => player.name).join(', ');
 
-            const shareText = `White: ${team1Names}\n\nColoured: ${team2Names}`;
+            const shareText = `Team 1 ⚪: ${team1Names}\n\nTeam 2 ⚫: ${team2Names}`;
 
             if (navigator.share) {
                 navigator.share({
@@ -399,6 +509,16 @@
                 renderPlayers();
                 renderSelectedPlayers();
             }
+        }
+
+        function toggleHelp() {
+            const helpContent = document.getElementById('helpContent');
+            helpContent.style.display = helpContent.style.display === 'none' || helpContent.style.display === '' ? 'block' : 'none';
+        }
+
+        function toggleAddPlayerSection() {
+            const addPlayerSection = document.getElementById('addPlayerSection');
+            addPlayerSection.style.display = addPlayerSection.style.display === 'none' || addPlayerSection.style.display === '' ? 'block' : 'none';
         }
 
         // Initial render
